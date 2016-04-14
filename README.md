@@ -57,7 +57,7 @@ OneIM 是轻量级即时通讯服务器，它可以通过很少的代码和带�
 
 #### 消息类型
 
-** Position **：bits byte 1, 7 - 3
+**Position**：bits byte 1, 7 - 3
 
 这是一个 5-bit 无符号值，这个版本的枚举值如下表:
 
@@ -286,7 +286,7 @@ function decode() {
 	</tbody>
 <table>
 
-** compression **
+**compression**
 **Position:** 4 bit
 
 | 枚举值 | Hex  | DESCRIPTION |
@@ -294,7 +294,7 @@ function decode() {
 |  00   | 0x00 | 不压缩 |
 |  01   | 0x01 | GZIP压缩 |
 
-** Will Flag **
+**Will Flag**
 **Position:** 3 bit
 
 | 枚举值 | Hex  | DESCRIPTION |
@@ -302,7 +302,7 @@ function decode() {
 |  00   | 0x00 | 连接断开后可以清理Client |
 |  01   | 0x01 | 连接断开后不可以清理Client |
 
-** Clean Session **
+**Clean Session**
 
 **Position:** 5 bit
 
@@ -310,7 +310,7 @@ function decode() {
 
 服务器可以提供一个管理机制， 用来清除存储在一个客户机上的信息，当认为客户机永远不会重新连接时。 当Will Flag 设置为0， 并且在64个Keep Alive Timer之后没有重新连接， 则认为设备永远不会重新连接。
 
-** Username and Password **
+**Username and Password**
 
 **Position:** 6 bit and 7 bit
 
@@ -374,7 +374,7 @@ function decode() {
 
 以下类型的消息类型需要有一个Payload:
 
-** CONNECT **
+**CONNECT**
 	payload包含一个或多个UTF-8编码的字符串. 包含了一个Client ID，用户名和密码。 其中Client ID是必须的， 用户名和密码是否存在是根据Header中的连接标识决定的。
 
 如果你想有效的压缩payload中的数据，需要在Header中定义压缩的细节。
@@ -572,11 +572,11 @@ UTF-8是一种有效的Unicode编码的字符串进行编码的ASCII字符在基
 
 ## 4. 工作流程
 ### 4.1 不同QoS的服务流程
-** QoS Level 0 **: 最多一次到达，无ACK.
+**QoS Level 0**: 最多一次到达，无ACK.
 
 消息传递根据依赖于底层的TCP/IP网络， 不需要ACK相应。并且在协议中没有定义重试语义， 消息最多到达服务器一次。
 
-** QoS Level 1 **: 最少一次到达，有ACK.
+**QoS Level 1**: 最少一次到达，有ACK.
 
 由服务器接收一个消息并返回ACK确认。如果有一个确定的故障或通信链路或设备发送的确认消息，或不在规定时间内接收，发送方重新发送消息设置邮件头中的重复点。至少一次消息到达服务器。无论是订阅和退订消息使用QoS等级1。
 
