@@ -33,10 +33,11 @@ OneIM 是轻量级即时通讯服务器，它可以通过很少的代码和带�
 	<tbody>
 		<tr>
 			<td>byte 1</td>
-			<td colspan="5"> Message Type </td>
+			<td colspan="4"> Message Type </td>
 			<td>DUP</td>
 			<td>QoS</td>
 			<td>RETAIN</td>
+			<td>Delay</td>
 		</tr>
 		<tr>
 			<td>byte 2</td>
@@ -47,7 +48,7 @@ OneIM 是轻量级即时通讯服务器，它可以通过很少的代码和带�
 
 #### Byte 1
 
-包含消息类型和一些标记值(DUP flag、QoS level和retain)
+包含消息类型和一些标记值(DUP flag、QoS level、retain和Delay)
 
 #### Byte 2
 
@@ -57,64 +58,49 @@ OneIM 是轻量级即时通讯服务器，它可以通过很少的代码和带�
 
 #### 消息类型
 
-**Position**：bits byte 1, 7 - 3
+**Position**：bits byte 1, 7 - 4
 
-这是一个 5-bit 无符号值，这个版本的枚举值如下表:
+这是一个 4-bit 无符号值，这个版本的枚举值如下表:
 
 | 枚举值 | Hex  | COMMAND     | DESCRIPTION         |
 | ----- |:----:|:------------|:--------------------|
-|  00   | 0x00 | Reserved    | 保留字段 |
+|  00   | 0x00 | Reserved    | - |
 |  01   | 0x01 | CONNECT     | 客户端请求连接到服务器 |
 |  02   | 0x02 | CONNACK     | 连接请求确认 |
 |  03   | 0x03 | PUBLISH     | 发布消息 |
 |  04   | 0x04 | PUBACK      | 发布确认 |
 |  05   | 0x05 | RECEIVE     | 接收消息 |
 |  06   | 0x06 | RECEACK     | 接收确认 |
-|  07   | 0x07 | PROPERTY    | 设置设备属性 |
-|  08   | 0x08 | PROPACK     | 设置设备属性ack |
+|  07   | 0x07 | SYNCREQ     | Sync请求 |
+|  08   | 0x08 | SYNCRESP    | Sync响应 |
 |  09   | 0x09 | PING        | PING请求 |
 |  10   | 0x0A | PONG        | PONG返回 |
 |  11   | 0x0B | CMDREQ      | 扩展命令请求 |
 |  12   | 0x0C | CMDRESP     | 扩展命令返回 |
-|  13   | 0x0D | DISCONNECT  | 客户端断开连接 |
-|  14   | 0x0E | Reserved    |      -      |
-|  15   | 0x0F | Reserved    |      -      |
-|  16   | 0x10 | MVNODE      | 接入节点变更， 返回新节点地址 |
-|  17   | 0x11 | MVNODEACK   | 接入节点变更ACK，之后断开连接 |
-|  18   | 0x12 | Reserved    |      -      |
-|  19   | 0x13 | Reserved    |      -      |
-|  20   | 0x14 | Reserved    |      -      |
-|  21   | 0x15 | Reserved    |      -      |
-|  22   | 0x16 | Reserved    |      -      |
-|  23   | 0x17 | Reserved    |      -      |
-|  24   | 0x18 | Reserved    |      -      |
-|  25   | 0x19 | Reserved    |      -      |
-|  26   | 0x1A | Reserved    |      -      |
-|  27   | 0x1B | Reserved    |      -      |
-|  28   | 0x1C | Reserved    |      -      |
-|  29   | 0x1D | Reserved    |      -      |
-|  30   | 0x1E | Reserved    |      -      |
-|  31   | 0x1F | Reserved    |      -      |
+|  13   | 0x0D | MVNODE      | 接入节点变更， 返回新节点地址 |
+|  14   | 0x0E | DISCONNECT  | 客户端断开连接 |
+|  15   | 0x0F | Reserved    | - |
 
 #### 标记值
 
-剩余的标记位包含字段DUP、QoS和retain. 标识位的含义如下表：
+剩余的标记位包含字段DUP、QoS、Retain和Delay. 标识位的含义如下表：
 
 | postion |  NAME  | DESCRIPTION |
 |:-------:|:------:|:------------|
-|    2    | DUP    | 标识是否为重传的消息 |
-|    1    | QoS    | 标记服务质量 |
-|    0    | RETAIN | 标识是否序列化消息 |
+|    3    | DUP    | 标识是否为重传的消息 |
+|    2    | QoS    | 标记服务质量 |
+|    1    | RETAIN | 标识是否序列化消息 |
+|    0    | Delay | 是否及时推送客户端 |
 
 #### DUP
 
-**Position**: byte 1, bit 2
+**Position**: byte 1, bit 3
 
 这个标识设置时，表示这是一条未收到ACK的重新发送的消息。
 
 #### QoS
 
-**Position**: byte 1, bit 1
+**Position**: byte 1, bit 2
 
 此标识指示发布消息的交付级别， 下面的表格显示了服务质量的水平。
 
@@ -125,7 +111,7 @@ OneIM 是轻量级即时通讯服务器，它可以通过很少的代码和带�
 
 #### RETAIN
 
-**Position**: byte 1, bit 0
+**Position**: byte 1, bit 1
 
 此标识表示了服务端是否永久保存消息， 直到被所有的客户端收到。
 
@@ -133,6 +119,17 @@ OneIM 是轻量级即时通讯服务器，它可以通过很少的代码和带�
 |:------:|:---:|:------------|
 |    0   |  0  | 不在服务端序列化消息， 在连接断开的时候丢失消息 |
 |    1   |  1  | 在服务端序列化消息， 在连接断开的时候消息不丢失 |
+
+#### Delay
+
+**Position**: byte 1, bit 0
+
+此标识表示是否直接推送到客户端。
+
+| delay | bit | DESCRIPTION |
+|:-----:|:---:|:------------|
+|   0   |  0  | 表示及时推送到客户端 |
+|   1   |  1  | 表示等待客户端的Sync请求 |
 
 #### 剩余长度
 
@@ -248,14 +245,11 @@ function decode() {
 	<tbody>
 		<tr>
 			<td> </td>
-			<td> Username Flag </td>
-			<td> Password Flag </td>
+			<td colspan="2"> Authorization </td>
 			<td> Clean Session </td>
 			<td> Compression </td>
 			<td> Will Flag </td>
-			<td> - </td>
-			<td> - </td>
-			<td> - </td>
+			<td colspan="3"> Keep Alive Timer </td>
 		</tr>
 		<tr>
 			<td> </td>
@@ -310,14 +304,16 @@ function decode() {
 
 服务器可以提供一个管理机制， 用来清除存储在一个客户机上的信息，当认为客户机永远不会重新连接时。 当Will Flag 设置为0， 并且在64个Keep Alive Timer之后没有重新连接， 则认为设备永远不会重新连接。
 
-**Username and Password**
+**Authorization**
 
 **Position:** 6 bit and 7 bit
 
-一个客户端可以选择指定一个用户名和密码， 表示在payload中包含了用户名和密码。
-
-如果设置了用户名标识， 则payload中的用户名字段是强制性的， 否则用户名的值将被忽略。
-如果设置了密码标识， 则payload中的用户名字段是强制性的， 否则用户名的值将被忽略。但是只提供一个密码， 不提供用户名是无效的。
+| 枚举值 | Hex  | DESCRIPTION |
+| ----- |:----:|:------------|
+|  00   | 0x00 | 匿名登陆 |
+|  01   | 0x01 | 用户名和密码登陆 |
+|  02   | 0x02 | Token 登陆 |
+|  03   | 0x03 | IP 登陆 |
 
 #### Keep Alive Timer
 
@@ -369,6 +365,10 @@ function decode() {
 		</tr>
 	</tbody>
 <table>
+
+#### 消息标识
+
+在PUBLISH命令中，消息标识是必须存在于Variable Header中。改字段包含delay， 格式如下表。
 
 ### 2.3 Payload
 
@@ -569,6 +569,309 @@ UTF-8是一种有效的Unicode编码的字符串进行编码的ASCII字符在基
 所有未使用的bit都应该被设置为0.
 
 ## 3. 消息类型
+### 3.1 CONNECT
+
+在CONNECT命令中， 数据包的格式如下表：
+
+<table>
+	<thead>
+		<tr style="background-color: #dedeff;">
+			<th>bit</th>
+			<th>7</th>
+			<th>6</th>
+			<th>5</th>
+			<th>4</th>
+			<th>3</th>
+			<th>2</th>
+			<th>1</th>
+			<th>0</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td colspan="9"> Fixed Header </td>
+		</tr>
+		<tr>
+			<td>byte 1</td>
+			<td colspan="4"> Message Type </td>
+			<td>DUP</td>
+			<td>QoS</td>
+			<td>RETAIN</td>
+			<td>Delay</td>
+		</tr>
+		<tr>
+			<td> </td>
+			<td> 0 </td>
+			<td> 0 </td>
+			<td> 0 </td>
+			<td> 1 </td>
+			<td> x </td>
+			<td> x </td>
+			<td> x </td>
+			<td> x </td>
+		</tr>
+		<tr>
+			<td>byte 2</td>
+			<td colspan="8"> Remaining Length </td>
+		</tr>
+		<tr>
+			<td colspan="9"> Variable Header </td>
+		</tr>
+		<tr>
+			<td> byte 3 </td>
+			<td colspan="8"> Protocol Version </td>
+		</tr>
+		<tr>
+			<td> </td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+			<td>1</td>
+		</tr>
+		<tr>
+			<td> byte 4 </td>
+			<td colspan="2"> Authorization </td>
+			<td> Clean Session </td>
+			<td> Compression </td>
+			<td> Will Flag </td>
+			<td colspan="3"> Keep Alive Timer </td>
+		</tr>
+		<tr>
+			<td> </td>
+			<td>x</td>
+			<td>x</td>
+			<td>x</td>
+			<td>x</td>
+			<td>x</td>
+			<td>x</td>
+			<td>x</td>
+			<td>x</td>
+		</tr>
+		<tr>
+			<td> byte 5 </td>
+			<td colspan="8"> Keep Alive Timer </td>
+		</tr>
+		<tr>
+			<td> </td>
+			<td>x</td>
+			<td>x</td>
+			<td>x</td>
+			<td>x</td>
+			<td>x</td>
+			<td>x</td>
+			<td>x</td>
+			<td>x</td>
+		</tr>
+		<tr>
+			<td colspan="9"> Payload </td>
+		</tr>
+		<tr>
+			<td> </td>
+			<td colspan="9">
+				<b>Client Identifier(客户端ID)</b> <br />
+				1-23个字符长度，客户端到服务器的全局唯一标志，如果客户端ID超出23个字符长度，服务器需要返回码为2，标识符被拒绝响应的CONNACK消息。处理QoS级别1和2的消息ID中，可以使用到。(必填项)
+			</td>
+		</tr>
+		<tr>
+			<td> </td>
+			<td colspan="9">
+				<b>Username</b> <br />
+				如果设置User Name标识，可以在此读取用户名称。一般可用于身份验证。协议建议用户名为不多于12个字符，不是必须。(在采用用户名密码验证时需要)
+			</td>
+		</tr>
+		<tr>
+			<td> </td>
+			<td colspan="9">
+				<b>Password</b> <br />
+				如果设置Password标识，便可读取用户密码。建议密码为12个字符或者更少，但不是必须。(在采用用户名密码验证时需要)
+			</td>
+		</tr>
+	</tbody>
+<table>
+
+#### 3.2 CONNACK
+
+在CONNECT命令中， 数据包的格式如下表：
+
+<table>
+	<thead>
+		<tr style="background-color: #dedeff;">
+			<th>bit</th>
+			<th>7</th>
+			<th>6</th>
+			<th>5</th>
+			<th>4</th>
+			<th>3</th>
+			<th>2</th>
+			<th>1</th>
+			<th>0</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td colspan="9"> Fixed Header </td>
+		</tr>
+		<tr>
+			<td>byte 1</td>
+			<td colspan="4"> Message Type </td>
+			<td>DUP</td>
+			<td>QoS</td>
+			<td>RETAIN</td>
+			<td>Delay</td>
+		</tr>
+		<tr>
+			<td> </td>
+			<td> 0 </td>
+			<td> 0 </td>
+			<td> 1 </td>
+			<td> 0 </td>
+			<td> x </td>
+			<td> x </td>
+			<td> x </td>
+			<td> x </td>
+		</tr>
+		<tr>
+			<td>byte 2</td>
+			<td colspan="8"> Remaining Length </td>
+		</tr>
+		<tr>
+			<td colspan="9"> Variable Header </td>
+		</tr>
+		<tr>
+			<td> byte 3 </td>
+			<td colspan="8"> Return Code </td>
+		</tr>
+		<tr>
+			<td> </td>
+			<td>x</td>
+			<td>x</td>
+			<td>x</td>
+			<td>x</td>
+			<td>x</td>
+			<td>x</td>
+			<td>x</td>
+			<td>x</td>
+		</tr>
+	</tbody>
+<table>
+
+#### 3.3 PUBLISH
+
+#### 3.4 PUBACK
+
+#### 3.5 RECEIVE
+
+#### 3.6 RECEACK
+
+#### 3.7 SYNCREQ
+
+#### 3.8 SYNCRESP
+
+#### 3.9 PING
+
+在PING命令中， 数据包的格式如下表：
+
+<table>
+	<thead>
+		<tr style="background-color: #dedeff;">
+			<th>bit</th>
+			<th>3</th>
+			<th>2</th>
+			<th>1</th>
+			<th>0</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td colspan="5"> Fixed Header </td>
+		</tr>
+		<tr>
+			<td>byte 1</td>
+			<td colspan="4"> Message Type </td>
+		</tr>
+		<tr>
+			<td> </td>
+			<td> 1 </td>
+			<td> 0 </td>
+			<td> 0 </td>
+			<td> 1 </td>
+		</tr>
+	</tbody>
+<table>
+
+#### 3.10 PONG
+
+在PONG命令中， 数据包的格式如下表：
+
+<table>
+	<thead>
+		<tr style="background-color: #dedeff;">
+			<th>bit</th>
+			<th>3</th>
+			<th>2</th>
+			<th>1</th>
+			<th>0</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td colspan="5"> Fixed Header </td>
+		</tr>
+		<tr>
+			<td>byte 1</td>
+			<td colspan="4"> Message Type </td>
+		</tr>
+		<tr>
+			<td> </td>
+			<td> 1 </td>
+			<td> 0 </td>
+			<td> 1 </td>
+			<td> 0 </td>
+		</tr>
+	</tbody>
+<table>
+
+#### 3.11 CMDREQ
+
+#### 3.12 CMDRESP
+
+#### 3.13 MVNODE
+
+#### 3.14  DISCONNECT
+
+在DISCONNECT命令中， 数据包的格式如下表：
+
+<table>
+	<thead>
+		<tr style="background-color: #dedeff;">
+			<th>bit</th>
+			<th>3</th>
+			<th>2</th>
+			<th>1</th>
+			<th>0</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td colspan="5"> Fixed Header </td>
+		</tr>
+		<tr>
+			<td>byte 1</td>
+			<td colspan="4"> Message Type </td>
+		</tr>
+		<tr>
+			<td> </td>
+			<td> 1 </td>
+			<td> 1 </td>
+			<td> 1 </td>
+			<td> 0 </td>
+		</tr>
+	</tbody>
+<table>
 
 ## 4. 工作流程
 ### 4.1 不同QoS的服务流程
